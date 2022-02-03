@@ -1,15 +1,17 @@
-import React, {useState, useEffect} from 'react';
-import "bootstrap/dist/css/bootrap.min.css";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap";
-import Cards from "./components/Cards/Cards";
-import Filters from './components/Filters';
-import Pagination from './components/Pagination/Pagination';
-import Search from './components/Search/Search';
-import Navbar from './components/NavBar/Navbar';
+import React, { useState, useEffect } from "react";
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Episodes from './Pages/Episodes';
-import Location from './Pages/Location';
+import Search from "./components/Search/Search";
+import Card from "./components/Card/Card";
+import Pagination from "./components/Pagination/Pagination";
+import Filter from "./components/Filter/Filter";
+import Navbar from "./components/Navbar/Navbar";
+
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Episodes from "./Pages/Episodes";
+import Location from "./Pages/Location";
+import CardDetails from "./components/Card/CardDetails";
 
 function App() {
   return (
@@ -18,58 +20,64 @@ function App() {
         <Navbar />
       </div>
       <Routes>
-        <Route path="/" element={<Home />}/>
-        <Route path="/episodes" element={<Episodes />}/>
-        <Route path="/location" element={<Location />}/>
+        <Route path="/" element={<Home />} />
+        <Route path="/:id" element={<CardDetails />} />
+
+        <Route path="/episodes" element={<Episodes />} />
+        <Route path="/episodes/:id" element={<CardDetails />} />
+
+        <Route path="/location" element={<Location />} />
+        <Route path="/location/:id" element={<CardDetails />} />
       </Routes>
     </Router>
-  )
+  );
 }
 
 const Home = () => {
-
-  let [pageNumber, setPageNumber] = useState(1); 
+  let [pageNumber, updatePageNumber] = useState(1);
+  let [status, updateStatus] = useState("");
+  let [gender, updateGender] = useState("");
+  let [species, updateSpecies] = useState("");
+  let [fetchedData, updateFetchedData] = useState([]);
   let [search, setSearch] = useState("");
-  let [status, setStatus] = useState("");
-  let [gender, setGender] = useState("");
-  let [species, setSpecies] = useState("");
+  let { info, results } = fetchedData;
 
-  let [fetchData, updateFetchedData] = useState([]);
-  let {info, results} = fetchedData; // lets destructure it
- 
   let api = `https://rickandmortyapi.com/api/character/?page=${pageNumber}&name=${search}&status=${status}&gender=${gender}&species=${species}`;
 
-  useEffect(()=> {
-    (async function (){
-      let data = await fetch(api).then(res=>res.json()); // wait a little bit cuz it will take some time to fetch data
-      updatedFetchedData(data);
+  useEffect(() => {
+    (async function () {
+      let data = await fetch(api).then((res) => res.json());
+      updateFetchedData(data);
     })();
-  },[api])
-
+  }, [api]);
   return (
-    <div className="App"> 
-
-      <Search setPageNumber={setPageNumber} setSearch={setSearch} />
-
+    <div className="App">
+      <h1 className="text-center mb-3">Characters</h1>
+      <Search setSearch={setSearch} updatePageNumber={updatePageNumber} />
       <div className="container">
         <div className="row">
-           <Filters 
-            setSpecies={setSpecies}
-            setGender={setGender}
-            setStatus={setStatus} 
-            setPageNumber={setPageNumber}
+          <Filter
+            pageNumber={pageNumber}
+            status={status}
+            updateStatus={updateStatus}
+            updateGender={updateGender}
+            updateSpecies={updateSpecies}
+            updatePageNumber={updatePageNumber}
           />
-          <div className="col-8">
+          <div className="col-lg-8 col-12">
             <div className="row">
-              <Cards results={results} />
+              <Card page="/" results={results} />
             </div>
           </div>
         </div>
       </div>
-
-      <Pagination pageNumber={pageNubmer} setPageNumber={setPageNumber}/>
+      <Pagination
+        info={info}
+        pageNumber={pageNumber}
+        updatePageNumber={updatePageNumber}
+      />
     </div>
-  )
-}
-export default App;
+  );
+};
 
+export default App;
